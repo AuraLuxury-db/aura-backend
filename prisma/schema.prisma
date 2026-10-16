@@ -1,0 +1,67 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      String    @default("CLIENT")
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+}
+
+model Hotel {
+  id          String       @id @default(uuid())
+  name        String
+  location    String
+  description String
+  pricePerNight Float
+  imageUrl    String
+  rooms       Room[]
+  bookings    Booking[]
+  createdAt   DateTime     @default(now())
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name      String
+  capacity  Int
+  available Boolean  @default(true)
+}
+
+model Flight {
+  id            String    @id @default(uuid())
+  airline       String
+  origin        String
+  destination   String
+  departureTime DateTime
+  arrivalTime   DateTime
+  price         Float
+  seatsAvailable Int
+  bookings      Booking[]
+  createdAt     DateTime  @default(now())
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  hotelId     String?
+  hotel       Hotel?   @relation(fields: [hotelId], references: [id])
+  flightId    String?
+  flight      Flight?  @relation(fields: [flightId], references: [id])
+  totalPrice  Float
+  status      String   @default("CONFIRMED")
+  checkIn     DateTime?
+  checkOut    DateTime?
+  createdAt   DateTime @default(now())
+}
